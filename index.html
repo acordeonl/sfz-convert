@@ -1,127 +1,137 @@
-    <!doctype html>
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
-        <link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet" async>
-        <link rel="manifest" href="/manifest.json">
-        <title>sfz convert</title>
-        <style>
-            body {
-                padding: 0;
-                margin: 0;
-                overflow: hidden;
-                font-family: 'Roboto', sans-serif;
-                font-weight: 300;
-                background-color: #E5E1DF;
-            }
-            [wrapper] {
-                margin: 150px;
-                margin-top: 100px ;
-            }
-            .thumb {
-                height: 75px;
-                border: 1px solid #000;
-                margin: 10px 5px 0 0;
-            }
-        </style>
-        <style fileChooser>
-            [wrapper], [fileChooser], [progress] {
-                padding: 5px 10px;
-                background: #4775D1;
-                border: 1px solid #4775D1;
-                position: relative;
-                color: #fff;
-                border-radius: 2px;
-                text-align: center;
-                float: left;
-            }
-            .hide_file {
-                position: absolute;
-                z-index: 1000;
-                opacity: 0;
-                right: 0;
-                top: 0;
-                height: 100%;
-                font-size: 24px;
-                width: 100%;
-            }
-            [instructions]{
-                font-size: 18px ; 
-                margin:100px ; 
-            }
-        </style>
-    </head>
-    <body>
-        <div wrapper>
-            <div fileChooser>
-                <span fileChooserText> Seleccionar sfz </span>
-                <input type="file" class="hide_file" id="files" name="files[]"/>
-            </div>
-            <div progress>
-            </div>
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet" async>
+    <link rel="manifest" href="/manifest.json">
+    <title>sfz convert</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 300;
+            background-color: #E5E1DF;
+        }
+        [wrapper] {
+            margin: 150px;
+            margin-top: 100px ;
+        }
+        .thumb {
+            height: 75px;
+            border: 1px solid #000;
+            margin: 10px 5px 0 0;
+        }
+    </style>
+    <style fileChooser>
+        [wrapper], [fileChooser], [progress] {
+            padding: 5px 10px;
+            background: #4775D1;
+            border: 1px solid #4775D1;
+            position: relative;
+            color: #fff;
+            border-radius: 2px;
+            text-align: center;
+            float: left;
+        }
+        .hide_file {
+            position: absolute;
+            z-index: 1000;
+            opacity: 0;
+            right: 0;
+            top: 0;
+            height: 100%;
+            font-size: 24px;
+            width: 100%;
+        }
+        [instructions]{
+            font-size: 18px ; 
+            margin:100px ; 
+        }
+    </style>
+</head>
+<body>
+    <div wrapper>
+        <div fileChooser>
+            <span fileChooserText> Seleccionar sfz </span>
+            <input type="file" class="hide_file" id="files" name="files[]"/>
         </div>
-        <script src='./codecs/aurora.js'></script>
-        <script src='./codecs/ogg.js'></script>
-        <script src='./codecs/vorbis.js'></script>
-        <script src="./codecs/OggVorbisEncoder.js"></script>
-        <script src="/zipjs/zip.js"></script>
-        <script >
-            OggVorbisEncoderConfig = {
-                memoryInitializerPrefixURL: "codecs/" 
-            };
-            zip.workerScriptsPath = '/zipjs/';
-            var fileMap = [];
-            var context = new AudioContext() ; 
-            var outputData,cnt,fileCnt,context = new AudioContext();
-            document.querySelector('input').addEventListener('change', async function () {
-                let zippedBlob = new Blob([this.files[0]], {type:this.files[0].type}) ; 
-                zip.createReader(new zip.BlobReader(zippedBlob), zipReader => {
-                    zipReader.getEntries(async entries => {
-                        
-                        let totalWavs = 0 ;
-                        for(let i = 0 ; i < entries.length ; i ++ )
-                            if(entries[i].filename.endsWith('.wav'))
-                                totalWavs ++ ; 
+        <div progress>
+        </div>
+    </div>
+    <script src='./codecs/aurora.js'></script>
+    <script src='./codecs/ogg.js'></script>
+    <script src='./codecs/vorbis.js'></script>
+    <script src="./codecs/OggVorbisEncoder.js"></script>
+    <script src="/zipjs/zip.js"></script>
+    <script >
+        OggVorbisEncoderConfig = {
+            memoryInitializerPrefixURL: "codecs/" 
+        };
+        zip.workerScriptsPath = '/zipjs/';
+        var fileMap = [];
+        var context = new AudioContext() ; 
+        var outputData,cnt,fileCnt,context = new AudioContext();
+        document.querySelector('input').addEventListener('change', async function () {
+            let zippedBlob = new Blob([this.files[0]], {type:this.files[0].type}) ; 
+            zip.createReader(new zip.BlobReader(zippedBlob), zipReader => {
+                zipReader.getEntries(async entries => {
+                    let zipWriter ; 
+                    let zipWriterPromise = new Promise(resolve => zipWriterPromiseR = resolve);
+                    zip.createWriter(new zip.BlobWriter("application/zip"), async res => {
+                        zipWriter = res ; 
+                        zipWriterPromiseR() ; 
+                    }) ; 
+                    await zipWriterPromise  ; 
 
-                        let wavsRead = 0 ; 
-                        let wavsProcessed = new Promise(resolve => wavsProcessedR = resolve);
-                        for(let i = 0 ; i < entries.length ; i ++ ){
-                            if(!entries[i].filename.endsWith('.wav'))
-                                continue ; 
-                            let sampleRate ; 
-                            entries[i].getData(new zip.BlobWriter('audio/wav'), wavBlob => {
+                    for(let i = 0 ; i < entries.length ; i ++ ){
+                        if(entries[i].filename.endsWith('/'))
+                            continue ; 
+                        let sampleRate ; 
+                        let entryProcessed = new Promise(resolve => entryProcessedR = resolve);
+                        entries[i].getData(new zip.BlobWriter(), blob => {
+                            if(!entries[i].filename.endsWith('.wav')) {
+                                zipWriter.add(entries[i].filename , new zip.BlobReader(blob), () => {
+                                    entryProcessedR() ; 
+                                });
+                            }
+                            else {
                                 let fR = new FileReader();
-                                fR.readAsArrayBuffer(wavBlob);
+                                fR.readAsArrayBuffer(blob);
                                 fR.onload = async() => {
                                     let bufferPart = fR.result.slice(24, 28) ; 
                                     let bufferView = new Uint32Array(bufferPart);
                                     sampleRate = bufferView[0];
                                     audioBuffer = await context.decodeAudioData(fR.result);
-
                                     let encoder = new OggVorbisEncoder(sampleRate, 1, 1);
                                     encoder.encode([audioBuffer.getChannelData(0)]);
-                                    let a = document.createElement('a');
-                                    a.download = "view-audio.ogg";
-                                    let blob = encoder.finish(["application/ogg"]);
-                                    let url = window.URL.createObjectURL(blob);
-                                    a.href = url;
-                                    a.click();
-                                    window.URL.revokeObjectURL(url);
-                                    wavsRead ++ ; 
-                                    if(wavsRead === totalWavs)
-                                       wavsProcessedR () ; 
+                                    let oggBlob = encoder.finish(["application/ogg"]);
+                                    let filename = entries[i].filename.slice(0,-3)+'ogg'; 
+                                    zipWriter.add(filename , new zip.BlobReader(oggBlob), () => {
+                                        entryProcessedR() ; 
+                                    });
                                 }
-                            });
-                        }
-                        await wavsProcessed;
-
+                            }
+                        });
+                        await entryProcessed ;  
+                    }
+                    // download final zip
+                    zipWriter.close( zippedBlob => {
+                        let a = document.createElement('a');
+                        a.download = "test.zip";
+                        let url = window.URL.createObjectURL(zippedBlob);
+                        a.href = url;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
                         zipReader.close();
-                    });
-                });
-            }, false);
-        </script>
-    </body>
-    </html>
+                    }) ; 
+                }, onerror);
+            });
+        }, false);
+    </script>
+</body>
+</html>
