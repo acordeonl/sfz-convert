@@ -74,58 +74,52 @@
         };
         zip.workerScriptsPath = '/zipjs/';
         document.querySelector('input').addEventListener('change', async function () {
-            var zipFileName = this.files[0].name ; 
-            var sleep = n => new Promise(resolve => setTimeout(resolve, n));
-            var zippedBlob = new Blob([this.files[0]], {type:this.files[0].type}) ; 
-            var context = new AudioContext() ; 
+            let zipFileName = this.files[0].name ; 
+            let zippedBlob = new Blob([this.files[0]], {type:this.files[0].type}) ; 
+            let context = new AudioContext() ; 
             zip.createReader(new zip.BlobReader(zippedBlob), zipReader => {
                 zipReader.getEntries(async entries => {
-                    var zipWriter , zipWriterPromise = new Promise(resolve => zipWriterPromiseR = resolve);
+                    let zipWriter , zipWriterPromise = new Promise(resolve => zipWriterPromiseR = resolve);
                     zip.createWriter(new zip.BlobWriter("application/zip"), async res => {
                         zipWriter = res ; 
                         zipWriterPromiseR() ; 
                     }) ; 
                     await zipWriterPromise  ; 
-                    for(var i = 0 ; i <  entries.length ; i ++ ){
+                    for(let i = 0 ; i <  entries.length ; i ++ ){
                         if(entries[i].filename.endsWith('/'))
                             continue ; 
-                        var entryProcessed = new Promise(resolve => entryProcessedR = resolve);
-                        console.log('1',entries[i].filename);
+                        let entryProcessed = new Promise(resolve => entryProcessedR = resolve);
                         entries[i].getData(new zip.BlobWriter('audio/wav'), blob => {
                             if(!entries[i].filename.endsWith('.wav')) {
-                                console.log('1.5');
                                 zipWriter.add(entries[i].filename , new zip.BlobReader(blob), () => {
-                                    console.log('1.7',entries[i].filename);
                                     entryProcessedR() ;
                                 });
                             }
                             else {
-                                var fR = new FileReader();
+                                let fR = new FileReader();
                                 fR.readAsArrayBuffer(blob);
                                 fR.onload = async() => {
-                                    var bufferPart = fR.result.slice(24, 28) ; 
-                                    var bufferView = new Uint32Array(bufferPart);
-                                    var sampleRate = bufferView[0] ; 
-                                    var audioBuffer = await context.decodeAudioData(fR.result);
-                                    var offlineContext_num_samples = Math.ceil(audioBuffer.duration*sampleRate) ; 
-                                    var buffer_online = audioBuffer.getChannelData(0) ; 
-                                    var num_samples = buffer_online.length ; 
-                                    var offlContext = new OfflineAudioContext(1,offlineContext_num_samples,sampleRate) ; 
-                                    var buffer_offline = offlContext.createBuffer(1,num_samples,context.sampleRate) ; 
-                                    var buff = buffer_offline.getChannelData(0) ; 
+                                    let bufferView = new Uint32Array(fR.result.slice(24, 28));
+                                    let sampleRate = bufferView[0] ; 
+                                    let audioBuffer = await context.decodeAudioData(fR.result);
+                                    let offlineContext_num_samples = Math.ceil(audioBuffer.duration*sampleRate) ; 
+                                    let buffer_online = audioBuffer.getChannelData(0) ; 
+                                    let num_samples = buffer_online.length ; 
+                                    let offlContext = new OfflineAudioContext(1,offlineContext_num_samples,sampleRate) ; 
+                                    let buffer_offline = offlContext.createBuffer(1,num_samples,context.sampleRate) ; 
+                                    let buff = buffer_offline.getChannelData(0) ; 
                                     for(let i = 0 ; i < num_samples ; i ++ )
                                         buff[i] = buffer_online[i] ; 
-                                    var source = offlContext.createBufferSource() ; 
+                                    let source = offlContext.createBufferSource() ; 
                                     source.buffer = buffer_offline ; 
                                     source.connect(offlContext.destination) ; 
                                     source.start(0) ; 
                                     offlContext.startRendering().then( renderedBuffer => {
-                                        var encoder = new OggVorbisEncoder(sampleRate, 1, 1);
+                                        let encoder = new OggVorbisEncoder(sampleRate, 1, 1);
                                         encoder.encode([renderedBuffer.getChannelData(0)]);
-                                        var oggBlob = encoder.finish(["application/ogg"]);
-                                        console.log('3');
+                                        let oggBlob = encoder.finish(["application/ogg"]);
                                         zipWriter.add(entries[i].filename.slice(0,-3)+'ogg' , new zip.BlobReader(oggBlob), () => { 
-                                            console.log('3.2',entries[i].filename);
+                                            console.log(entries[i].filename);
                                             entryProcessedR();
                                         }) ; 
 
@@ -133,15 +127,12 @@
                                 }
                             }
                         });
-                        console.log('2');
-                        // await sleep(2000);
-                        console.log('%c -----------------', 'background: #222; color: #bada55');                        
                         await entryProcessed ;  
                     }
                     zipWriter.close( zippedBlob => {
-                        var a = document.createElement('a');
+                        let a = document.createElement('a');
                         a.download = zipFileName.slice(0,-4)+'-ogg.zip';
-                        var url = window.URL.createObjectURL(zippedBlob);
+                        let url = window.URL.createObjectURL(zippedBlob);
                         a.href = url;
                         a.click();
                         window.URL.revokeObjectURL(url);
