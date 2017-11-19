@@ -63,18 +63,61 @@
             <div progress>
             </div>
         </div>
+        <script src='./codecs/aurora.js'></script>
+        <script src='./codecs/ogg.js'></script>
+        <script src='./codecs/vorbis.js'></script>
+        <script src="./codecs/OggVorbisEncoder.js"></script>
         <script src="/zipjs/zip.js"></script>
         <script >
+            OggVorbisEncoderConfig = {
+                memoryInitializerPrefixURL: "codecs/" 
+            };
             zip.workerScriptsPath = '/zipjs/';
             var fileMap = [];
+            var context = new AudioContext() ; 
             var outputData,cnt,fileCnt,context = new AudioContext();
             document.querySelector('input').addEventListener('change', async function () {
-                console.log(this.files[0]);
                 let zippedBlob = new Blob([this.files[0]], {type:this.files[0].type}) ; 
-                console.log(zippedBlob);
                 zip.createReader(new zip.BlobReader(zippedBlob), zipReader => {
                     zipReader.getEntries(async entries => {
-                        console.log(entries);
+                        
+                        let totalWavs = 0 ;
+                        for(let i = 0 ; i < entries.length ; i ++ )
+                            if(entries[i].filename.endsWith('.wav'))
+                                totalWavs ++ ; 
+
+                        let wavsRead = 0 ; 
+                        let wavsProcessed = new Promise(resolve => wavsProcessedR = resolve);
+                        for(let i = 0 ; i < entries.length ; i ++ ){
+                            if(!entries[i].filename.endsWith('.wav'))
+                                continue ; 
+                            let sampleRate ; 
+                            entries[i].getData(new zip.BlobWriter('audio/wav'), wavBlob => {
+                                let fR = new FileReader();
+                                fR.readAsArrayBuffer(wavBlob);
+                                fR.onload = async() => {
+                                    let bufferPart = fR.result.slice(24, 28) ; 
+                                    let bufferView = new Uint32Array(bufferPart);
+                                    sampleRate = bufferView[0];
+                                    audioBuffer = await context.decodeAudioData(fR.result);
+
+                                    let encoder = new OggVorbisEncoder(sampleRate, 1, 1);
+                                    encoder.encode([audioBuffer.getChannelData(0)]);
+                                    let a = document.createElement('a');
+                                    a.download = "view-audio.ogg";
+                                    let blob = encoder.finish(["application/ogg"]);
+                                    let url = window.URL.createObjectURL(blob);
+                                    a.href = url;
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    wavsRead ++ ; 
+                                    if(wavsRead === totalWavs)
+                                       wavsProcessedR () ; 
+                                }
+                            });
+                        }
+                        await wavsProcessed;
+
                         zipReader.close();
                     });
                 });
