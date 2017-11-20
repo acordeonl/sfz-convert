@@ -1,5 +1,6 @@
 <!doctype html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
@@ -10,9 +11,6 @@
     <link rel="import" href="./bower_components/paper-slider/paper-slider.html">
     <title>sfz convert</title>
     <style>
-        [wrapper-main]{
-            margin:50px ; 
-        }
         body {
             padding: 0;
             margin: 0;
@@ -21,25 +19,17 @@
             font-weight: 300;
             background-color: #E5E1DF;
         }
-        [wrapper] {
-            margin: 150px;
-            margin-top: 100px ;
-        }
-        .thumb {
-            height: 75px;
-            border: 1px solid #000;
-            margin: 10px 5px 0 0;
-        }
     </style>
     <style fileChooser>
-        [wrapper], [fileChooser], [progress] {
-            padding: 5px 10px;
+        [wrapper-input],
+        [fileChooser],
+        [progress] {
+            padding: 5px 20px;
             background: #4775D1;
             border: 1px solid #4775D1;
             position: relative;
             color: #fff;
-            border-radius: 2px;
-            text-align: center;
+            border-radius: 3px;
             float: left;
         }
         .hide_file {
@@ -52,128 +42,206 @@
             font-size: 24px;
             width: 100%;
         }
+    </style>
+    <style layout>
+        [wrapper]{
+            margin: auto;
+            margin-top:45px ; 
+            background-color:white ; 
+            box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14),
+            0 1px 8px 0 rgba(0, 0, 0, 0.12),
+            0 3px 3px -2px rgba(0, 0, 0, 0.4);
+            width: 30vw;
+            padding: 10px;
+            padding-bottom:40px ; 
+            border-radius: 3px;
+            
+        }
+        [content]{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column ;
+        }
+        [output]{
+            background-color: #E5E1DF ; 
+            border-radius: 3px;
+            width:80% ;
+            height:50px;
+            padding: 10px ; 
+        }
         [instructions]{
-            font-size: 18px ; 
-            margin:100px ; 
+            width:80% ; 
+            text-align: justify;
+            text-justify: inter-word;
+        }
+        [title]{
+            margin-top:25px ; 
+            width:85% ; 
+            font-weight: 400 ; 
+            font-size: 20px ; 
         }
     </style>
 </head>
-<body>
-    <div wrapper-main>
-        <div wrapper>
-            <div fileChooser>
-                <span fileChooserText> Seleccionar sfz </span>
-                <input type="file" class="hide_file" id="files" name="files[]"/>
-            </div>
-            <div progress>
-            </div>
-        </div>
-        <div > Calidad de audio </div>
-        <paper-slider id='slider' min ='-0.1' max ='1' step='0.1' on-value-change='test()' value='0.7'></paper-slider>
-    </div>
 
+<body>
+    <div wrapper>
+        <div content >
+            <div title> Generar sfz.zip comprimido </div>
+            <div instructions  style="margin-top:5px;"> 
+                <p>Lorem ipsum doloctetur adipiscing elit. Ma Donec vehicula risus sed lacus condimentum, eu faucibus lorem placerat. Vivamus quam turpis, eleifend ut bibendum et, auctor quis turpis. Praesent at elit at ipsum viverra gravida. Aliquam iaculis vel nunc non eleifend. Integer ipsum lectus, mattis sit amet mi quis, tincidunt aliquam turpis. Fusce vulputate, quam ut sollicitudin interdum, erat metus pretium ipsum, a auctor nunc nisi ac nunc.</p>    
+            </div>
+            
+            <div style="margin-top: 20px ;">
+                <div style='font-weight: 400'> Calidad de audio </div>
+                <div  style='margin-top:5px; display: flex; flex-direction: row ;' >
+                    <span style="margin-top:7px;">-</span>
+                    <paper-slider id='slider' min='-0.1' max='1' step='0.1' on-value-change='test()' value='0.7'></paper-slider>
+                    <span style="margin-top:7px;">+</span>
+                </div>
+            </div>
+            <div style='margin-top:25px'>
+                <div wrapper-input>
+                    <div fileChooser>
+                        <span fileChooserText> Seleccionar sfz </span>
+                        <input type="file" class="hide_file" id="files" name="files[]" />
+                    </div>
+                    <div progress>
+                    </div>
+                </div>
+            </div>
+            <!-- <div output style='margin-top:20px' >
+                Detalles de conversión: 
+            </div> -->
+        </div>
+       
+    </div>
     <script src="./javascripts/OggVorbisEncoder.js"></script>
     <script src='./codecs/aurora.js'></script>
     <script src='./codecs/ogg.js'></script>
     <script src='./codecs/vorbis.js'></script>
     <script src="/zipjs/zip.js"></script>
-    <script >
-        var oggQuality = 0.7 ; 
-        var context = new AudioContext() ; 
-        
+    <script>
+        var oggQuality = 0.7;
+        var context = new AudioContext();
+
         OggVorbisEncoderConfig = {
-            memoryInitializerPrefixURL: "javascripts/" 
+            memoryInitializerPrefixURL: "javascripts/"
         };
         zip.workerScriptsPath = '/zipjs/';
         document.getElementById('slider').addEventListener('change', e => {
-            oggQuality = e.target.value ; 
+            oggQuality = e.target.value;
         });
         document.querySelector('input').onclick = function () {
             this.value = null;
         };
 
         document.querySelector('input').addEventListener('change', async function () {
-            document.getElementById('slider').disabled = true ; 
-            let zipFileName = this.files[0].name ; 
-            let zippedBlob = new Blob([this.files[0]], {type:this.files[0].type}) ; 
+            document.getElementById('slider').disabled = true;
+            let zipFileName = this.files[0].name;
+            let zippedBlob = new Blob([this.files[0]], {
+                type: this.files[0].type
+            });
             zip.createReader(new zip.BlobReader(zippedBlob), zipReader => {
                 zipReader.getEntries(async entries => {
-                    let zipWriter , zipWriterPromise = new Promise(resolve => zipWriterPromiseR = resolve);
+                    let zipWriter, zipWriterPromise = new Promise(resolve => zipWriterPromiseR =
+                        resolve);
                     zip.createWriter(new zip.BlobWriter("application/zip"), async res => {
-                        zipWriter = res ; 
-                        zipWriterPromiseR() ; 
-                    }) ; 
-                    await zipWriterPromise  ; 
-                    let processedFiles = 0 ; 
-                    let totalFiles = 0 ; 
-                    for(let i = 0 ; i < entries.length ; i ++ ){
-                        if(entries[i].filename.endsWith('/'))
-                            continue ; 
-                        totalFiles ++ ; 
+                        zipWriter = res;
+                        zipWriterPromiseR();
+                    });
+                    await zipWriterPromise;
+                    let processedFiles = 0;
+                    let totalFiles = 0;
+                    for (let i = 0; i < entries.length; i++) {
+                        if (entries[i].filename.endsWith('/'))
+                            continue;
+                        totalFiles++;
                     }
-                    document.querySelector('[fileChooserText]').innerHTML = 'comprimiendo ... ' ; 
-                    for(let i = 0 ; i <  entries.length ; i ++ ){
-                        if(entries[i].filename.endsWith('/'))
-                            continue ; 
+                    document.querySelector('[fileChooserText]').innerHTML = 'comprimiendo ... ';
+                    for (let i = 0; i < entries.length; i++) {
+                        if (entries[i].filename.endsWith('/'))
+                            continue;
                         let entryProcessed = new Promise(resolve => entryProcessedR = resolve);
                         entries[i].getData(new zip.BlobWriter('audio/wav'), blob => {
-                            if(!entries[i].filename.endsWith('.wav')) {
-                                zipWriter.add(entries[i].filename , new zip.BlobReader(blob), () => {
-                                    processedFiles ++ ; 
-                                    document.querySelector('[progress]').innerHTML = Math.ceil(processedFiles/totalFiles*100)+'%' ; 
-                                    entryProcessedR() ;
+                            if (!entries[i].filename.endsWith('.wav')) {
+                                zipWriter.add(entries[i].filename, new zip.BlobReader(
+                                    blob), () => {
+                                    processedFiles++;
+                                    document.querySelector('[progress]').innerHTML =
+                                        Math.ceil(processedFiles / totalFiles *
+                                            100) + '%';
+                                    entryProcessedR();
                                 });
-                            }
-                            else {
+                            } else {
                                 let fR = new FileReader();
                                 fR.readAsArrayBuffer(blob);
                                 fR.onload = async() => {
-                                    let bufferView = new Uint32Array(fR.result.slice(24, 28));
-                                    let sampleRate = bufferView[0] ; 
-                                    let audioBuffer = await context.decodeAudioData(fR.result);
-                                    let offlineContext_num_samples = Math.ceil(audioBuffer.duration*sampleRate) ; 
-                                    let buffer_online = audioBuffer.getChannelData(0) ; 
-                                    let num_samples = buffer_online.length ; 
-                                    let offlContext = new OfflineAudioContext(1,offlineContext_num_samples,sampleRate) ; 
-                                    let buffer_offline = offlContext.createBuffer(1,num_samples,context.sampleRate) ; 
-                                    let buff = buffer_offline.getChannelData(0) ; 
-                                    for(let i = 0 ; i < num_samples ; i ++ )
-                                        buff[i] = buffer_online[i] ; 
-                                    let source = offlContext.createBufferSource() ; 
-                                    source.buffer = buffer_offline ; 
-                                    source.connect(offlContext.destination) ; 
-                                    source.start(0) ; 
-                                    offlContext.startRendering().then( renderedBuffer => {
-                                        let encoder = new OggVorbisEncoder(sampleRate, 1, oggQuality);
-                                        encoder.encode([renderedBuffer.getChannelData(0)]);
-                                        let oggBlob = encoder.finish(["application/ogg"]);
-                                        zipWriter.add(entries[i].filename.slice(0,-3)+'ogg' , new zip.BlobReader(oggBlob), () => { 
-                                            processedFiles ++ ; 
-                                            document.querySelector('[progress]').innerHTML = Math.ceil(processedFiles/totalFiles*100)+'%' ; 
-                                            entryProcessedR();
-                                        }) ; 
+                                    let bufferView = new Uint32Array(fR.result.slice(
+                                        24, 28));
+                                    let sampleRate = bufferView[0];
+                                    let audioBuffer = await context.decodeAudioData(
+                                        fR.result);
+                                    let offlineContext_num_samples = Math.ceil(
+                                        audioBuffer.duration * sampleRate);
+                                    let buffer_online = audioBuffer.getChannelData(
+                                        0);
+                                    let num_samples = buffer_online.length;
+                                    let offlContext = new OfflineAudioContext(1,
+                                        offlineContext_num_samples, sampleRate);
+                                    let buffer_offline = offlContext.createBuffer(1,
+                                        num_samples, context.sampleRate);
+                                    let buff = buffer_offline.getChannelData(0);
+                                    for (let i = 0; i < num_samples; i++)
+                                        buff[i] = buffer_online[i];
+                                    let source = offlContext.createBufferSource();
+                                    source.buffer = buffer_offline;
+                                    source.connect(offlContext.destination);
+                                    source.start(0);
+                                    offlContext.startRendering().then(
+                                        renderedBuffer => {
+                                            let encoder = new OggVorbisEncoder(
+                                                sampleRate, 1, oggQuality);
+                                            encoder.encode([renderedBuffer.getChannelData(
+                                                0)]);
+                                            let oggBlob = encoder.finish([
+                                                "application/ogg"
+                                            ]);
+                                            zipWriter.add(entries[i].filename.slice(
+                                                    0, -3) + 'ogg', new zip
+                                                .BlobReader(oggBlob), () => {
+                                                    processedFiles++;
+                                                    document.querySelector(
+                                                            '[progress]').innerHTML =
+                                                        Math.ceil(
+                                                            processedFiles /
+                                                            totalFiles *
+                                                            100) + '%';
+                                                    entryProcessedR();
+                                                });
 
-                                    }) ; 
+                                        });
                                 }
                             }
                         });
-                        await entryProcessed ;  
+                        await entryProcessed;
                     }
-                    document.querySelector('[fileChooserText]').innerHTML = ' Seleccionar sfz ' ; 
-                    document.querySelector('[progress]').innerHTML = '' ; 
-                    zipWriter.close( zippedBlob => {
+                    document.querySelector('[fileChooserText]').innerHTML = ' Seleccionar sfz ';
+                    document.querySelector('[progress]').innerHTML = '';
+                    zipWriter.close(zippedBlob => {
                         let a = document.createElement('a');
-                        a.download = zipFileName.slice(0,-4)+'-ogg.zip';
+                        a.download = zipFileName.slice(0, -4) + '-ogg.zip';
                         let url = window.URL.createObjectURL(zippedBlob);
                         a.href = url;
                         a.click();
                         window.URL.revokeObjectURL(url);
                         zipReader.close();
-                        document.getElementById('slider').disabled = false ; 
-                    }) ; 
+                        document.getElementById('slider').disabled = false;
+                    });
                 }, onerror);
             });
         }, false);
     </script>
 </body>
+
 </html>
