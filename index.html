@@ -7,8 +7,12 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet" async>
     <link rel="manifest" href="/manifest.json">
+    <link rel="import" href="./bower_components/paper-slider/paper-slider.html">
     <title>sfz convert</title>
     <style>
+        [wrapper-main]{
+            margin:50px ; 
+        }
         body {
             padding: 0;
             margin: 0;
@@ -55,28 +59,43 @@
     </style>
 </head>
 <body>
-    <div wrapper>
-        <div fileChooser>
-            <span fileChooserText> Seleccionar sfz </span>
-            <input type="file" class="hide_file" id="files" name="files[]"/>
+    <div wrapper-main>
+        <div wrapper>
+            <div fileChooser>
+                <span fileChooserText> Seleccionar sfz </span>
+                <input type="file" class="hide_file" id="files" name="files[]"/>
+            </div>
+            <div progress>
+            </div>
         </div>
-        <div progress>
-        </div>
+        <div > Calidad de audio </div>
+        <paper-slider id='slider' min ='-0.1' max ='1' step='0.1' on-value-change='test()' value='0.7'></paper-slider>
     </div>
+
     <script src="./javascripts/OggVorbisEncoder.js"></script>
     <script src='./codecs/aurora.js'></script>
     <script src='./codecs/ogg.js'></script>
     <script src='./codecs/vorbis.js'></script>
     <script src="/zipjs/zip.js"></script>
     <script >
+        var oggQuality = 0.7 ; 
+        var context = new AudioContext() ; 
+        
         OggVorbisEncoderConfig = {
             memoryInitializerPrefixURL: "javascripts/" 
         };
         zip.workerScriptsPath = '/zipjs/';
+        document.getElementById('slider').addEventListener('change', e => {
+            oggQuality = e.target.value ; 
+        });
+        document.querySelector('input').onclick = function () {
+            this.value = null;
+        };
+
         document.querySelector('input').addEventListener('change', async function () {
+            document.getElementById('slider').disabled = true ; 
             let zipFileName = this.files[0].name ; 
             let zippedBlob = new Blob([this.files[0]], {type:this.files[0].type}) ; 
-            let context = new AudioContext() ; 
             zip.createReader(new zip.BlobReader(zippedBlob), zipReader => {
                 zipReader.getEntries(async entries => {
                     let zipWriter , zipWriterPromise = new Promise(resolve => zipWriterPromiseR = resolve);
@@ -85,6 +104,14 @@
                         zipWriterPromiseR() ; 
                     }) ; 
                     await zipWriterPromise  ; 
+                    let processedFiles = 0 ; 
+                    let totalFiles = 0 ; 
+                    for(let i = 0 ; i < entries.length ; i ++ ){
+                        if(entries[i].filename.endsWith('/'))
+                            continue ; 
+                        totalFiles ++ ; 
+                    }
+                    document.querySelector('[fileChooserText]').innerHTML = 'comprimiendo ... ' ; 
                     for(let i = 0 ; i <  entries.length ; i ++ ){
                         if(entries[i].filename.endsWith('/'))
                             continue ; 
@@ -92,6 +119,8 @@
                         entries[i].getData(new zip.BlobWriter('audio/wav'), blob => {
                             if(!entries[i].filename.endsWith('.wav')) {
                                 zipWriter.add(entries[i].filename , new zip.BlobReader(blob), () => {
+                                    processedFiles ++ ; 
+                                    document.querySelector('[progress]').innerHTML = Math.ceil(processedFiles/totalFiles*100)+'%' ; 
                                     entryProcessedR() ;
                                 });
                             }
@@ -115,11 +144,12 @@
                                     source.connect(offlContext.destination) ; 
                                     source.start(0) ; 
                                     offlContext.startRendering().then( renderedBuffer => {
-                                        let encoder = new OggVorbisEncoder(sampleRate, 1, 1);
+                                        let encoder = new OggVorbisEncoder(sampleRate, 1, oggQuality);
                                         encoder.encode([renderedBuffer.getChannelData(0)]);
                                         let oggBlob = encoder.finish(["application/ogg"]);
                                         zipWriter.add(entries[i].filename.slice(0,-3)+'ogg' , new zip.BlobReader(oggBlob), () => { 
-                                            console.log(entries[i].filename);
+                                            processedFiles ++ ; 
+                                            document.querySelector('[progress]').innerHTML = Math.ceil(processedFiles/totalFiles*100)+'%' ; 
                                             entryProcessedR();
                                         }) ; 
 
@@ -129,6 +159,8 @@
                         });
                         await entryProcessed ;  
                     }
+                    document.querySelector('[fileChooserText]').innerHTML = ' Seleccionar sfz ' ; 
+                    document.querySelector('[progress]').innerHTML = '' ; 
                     zipWriter.close( zippedBlob => {
                         let a = document.createElement('a');
                         a.download = zipFileName.slice(0,-4)+'-ogg.zip';
@@ -137,6 +169,7 @@
                         a.click();
                         window.URL.revokeObjectURL(url);
                         zipReader.close();
+                        document.getElementById('slider').disabled = false ; 
                     }) ; 
                 }, onerror);
             });

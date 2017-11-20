@@ -1,0 +1,20 @@
+{
+  "name": "sfz-convert",
+  "homepage": "https://github.com/acordeonl/sfz-convert",
+  "authors": [
+    "acordeonl <acordeonlwebmaster@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "paper-slider": "PolymerElements/paper-slider#^2.0.4"
+  }
+}
