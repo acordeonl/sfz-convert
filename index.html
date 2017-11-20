@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
     <link href="https://fonts.googleapis.com/css?family=Roboto:300" rel="stylesheet" async>
     <link rel="manifest" href="/manifest.json">
-    <link rel="import" href="./bower_components/paper-slider/paper-slider.html">
+    <link rel="import" href="/bower_components/paper-slider/paper-slider.html">
     <title>sfz convert</title>
     <style>
         body {
@@ -95,9 +95,9 @@
             <div style="margin-top: 20px ;">
                 <div style='font-weight: 400'> Calidad de audio </div>
                 <div  style='margin-top:5px; display: flex; flex-direction: row ;' >
-                    <span style="margin-top:7px;">-</span>
+                    <span style="margin-top:6px;">-</span>
                     <paper-slider id='slider' min='-0.1' max='1' step='0.1' on-value-change='test()' value='0.7'></paper-slider>
-                    <span style="margin-top:7px;">+</span>
+                    <span style="margin-top:6px;">+</span>
                 </div>
             </div>
             <div style='margin-top:25px'>
@@ -116,10 +116,10 @@
         </div>
        
     </div>
-    <script src="./javascripts/OggVorbisEncoder.js"></script>
-    <script src='./codecs/aurora.js'></script>
-    <script src='./codecs/ogg.js'></script>
-    <script src='./codecs/vorbis.js'></script>
+    <script src="/codecs/OggVorbisEncoder.js"></script>
+    <script src='/codecs/aurora.js'></script>
+    <script src='/codecs/ogg.js'></script>
+    <script src='/codecs/vorbis.js'></script>
     <script src="/zipjs/zip.js"></script>
     <script>
         var oggQuality = 0.7;
